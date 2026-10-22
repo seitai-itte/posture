@@ -24,6 +24,7 @@
   --font: 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', sans-serif;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; }
 body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.6; -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -39,9 +40,11 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 .ctls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .gridctl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
 
-.pair { display: flex; flex-direction: column; gap: 24px; }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 0; }
 .col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.col .btns { width: 100%; max-width: 360px; }
+.col .btns { width: 100%; padding: 0 4px; }
+.col[data-k="a"] .frame { border-radius: 8px 0 0 8px; align-self: flex-end; }
+.col[data-k="b"] .frame { border-radius: 0 8px 8px 0; align-self: flex-start; }
 .frame { position: relative; width: 100%; background: var(--frame); border-radius: 8px; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
 .frame img { position: absolute; left: 0; top: 0; max-width: none; transform-origin: 0 0; pointer-events: none; -webkit-user-drag: none; }
 .frame .grid { position: absolute; inset: 0; pointer-events: none; }
@@ -191,9 +194,18 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
     var c = Math.max(fw / sl.iw, fh / sl.ih);
     sl.tx = -(sl.ax - 0.5) * sl.iw * c / fw;
   }
+  /* 写真の端が枠の内側に入らないよう、端でピタッと止める */
+  function clampPos(sl, fw, fh) {
+    if (sl.s < 1) sl.s = 1;
+    var g = fit(sl, fw, fh);
+    var mx = Math.max(0, (g.dw - fw) / 2 / fw), my = Math.max(0, (g.dh - fh) / 2 / fh);
+    sl.tx = Math.min(mx, Math.max(-mx, sl.tx));
+    sl.ty = Math.min(my, Math.max(-my, sl.ty));
+  }
   function apply(k) {
     var sl = slots[k], f = col(k).querySelector('.frame'), img = f.querySelector('img');
     if (!sl.img) return;
+    clampPos(sl, f.clientWidth, f.clientHeight);
     var g = fit(sl, f.clientWidth, f.clientHeight);
     img.style.width = sl.iw + 'px'; img.style.height = sl.ih + 'px';
     img.style.transform = 'translate(' + g.x + 'px,' + g.y + 'px) scale(' + g.c + ')';
@@ -202,7 +214,7 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
   /* ---------- 枠の大きさ：保存サイズと同じ形で、画面に収まる最大 ---------- */
   function sizeFrames() {
     var a = panelAspect();
-    var maxW = $('.pair').clientWidth, maxH = Math.max(320, window.innerHeight * 0.8);
+    var maxW = $('.pair').clientWidth / 2, maxH = Math.max(320, window.innerHeight * 0.75);
     var w = Math.min(maxW, maxH * a), h = w / a;
     document.querySelectorAll('.frame').forEach(function (f) { f.style.width = w + 'px'; f.style.height = h + 'px'; });
   }
@@ -276,10 +288,7 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
   }
 
   /* ---------- ドラッグ・ピンチ・ホイール ---------- */
-  function minS(sl) {
-    var a = panelAspect(), r = sl.iw / sl.ih;
-    return Math.min(a / r, r / a);
-  }
+  function minS(sl) { return 1; }
   function clampS(s, sl) { return Math.min(MAX_S, Math.max(minS(sl), s)); }
   function zoomAt(k, ns, px, py) {
     var sl = slots[k], f = col(k).querySelector('.frame'), fw = f.clientWidth, fh = f.clientHeight;
