@@ -28,17 +28,25 @@ html, body { margin: 0; }
 body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.6; -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.app { max-width: 760px; margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 16px 40px; display: flex; flex-direction: column; gap: 20px; }
+.app { max-width: 760px; margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 16px 40px; display: flex; flex-direction: column; gap: 16px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
+
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { min-height: 36px; padding: 0 14px; border: 0; background: #fff; color: var(--fg); font: inherit; font-size: 13px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.gridctl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
 
 .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .col { display: flex; flex-direction: column; gap: 10px; }
-.frame { position: relative; aspect-ratio: 3 / 4; background: var(--frame); border-radius: 8px; overflow: hidden; }
-.frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
-.frame .plumb { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--plumb); box-shadow: 0 0 0 1px rgba(0,0,0,0.18); }
-.frame .lbl { position: absolute; top: 10px; left: 10px; padding: 2px 10px; border-radius: 4px; background: rgba(30,30,30,0.72); color: #fff; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; }
-.frame .empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; }
-.frame .st { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; color: #fff; font-size: 12px; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+.frame { position: relative; aspect-ratio: 3 / 4; background: var(--frame); border-radius: 8px; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+.frame img { position: absolute; left: 0; top: 0; max-width: none; transform-origin: 0 0; pointer-events: none; -webkit-user-drag: none; }
+.frame .grid { position: absolute; inset: 0; pointer-events: none; }
+.frame .plumb { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; margin-left: -0.5px; background: var(--plumb); pointer-events: none; }
+.frame .lbl { position: absolute; top: 8px; left: 8px; padding: 0 7px; border-radius: 3px; background: rgba(30,30,30,0.62); color: #fff; font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; line-height: 1.7; pointer-events: none; }
+.frame .empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; pointer-events: none; }
+.frame .st { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; color: #fff; font-size: 11.5px; text-shadow: 0 1px 2px rgba(0,0,0,0.6); pointer-events: none; }
 
 .btns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .btn { min-height: 44px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--fg); font: inherit; font-weight: 600; cursor: pointer; }
@@ -47,19 +55,30 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 
 .result { display: flex; flex-direction: column; gap: 8px; }
 .result img { width: 100%; border-radius: 8px; border: 1px solid var(--line); }
-.hint { margin: 0; color: var(--muted); font-size: 12.5px; }
+.hint { margin: 0; color: var(--muted); font-size: 12px; }
 </style>
 </head>
 <body>
 <main class="app">
-  <h1>姿勢比較</h1>
+  <div class="top">
+    <h1>姿勢比較</h1>
+    <div class="gridctl">
+      <span id="gridLbl">網目</span>
+      <div class="seg" id="gridSeg" role="group" aria-labelledby="gridLbl">
+        <button type="button" data-g="0" aria-pressed="true">なし</button>
+        <button type="button" data-g="1" aria-pressed="false">粗い</button>
+        <button type="button" data-g="2" aria-pressed="false">細かい</button>
+      </div>
+    </div>
+  </div>
 
   <div class="pair">
     <div class="col" data-k="a">
       <div class="frame">
         <span class="empty">写真なし</span>
         <img alt="" hidden>
-        <span class="plumb" hidden></span>
+        <div class="grid"></div>
+        <span class="plumb"></span>
         <span class="lbl">Before</span>
         <span class="st" aria-live="polite"></span>
       </div>
@@ -74,7 +93,8 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
       <div class="frame">
         <span class="empty">写真なし</span>
         <img alt="" hidden>
-        <span class="plumb" hidden></span>
+        <div class="grid"></div>
+        <span class="plumb"></span>
         <span class="lbl">After</span>
         <span class="st" aria-live="polite"></span>
       </div>
@@ -86,6 +106,7 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
       <input type="file" accept="image/*" data-role="file" hidden>
     </div>
   </div>
+  <p class="hint">写真はドラッグで移動、2本指（パソコンはホイール）で拡大。ダブルタップで最初の位置に戻ります。</p>
 
   <button class="btn primary" type="button" id="makeBtn" disabled>1枚の画像にする</button>
   <div class="result" id="result" hidden>
@@ -97,9 +118,17 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 <script src="pose-core.js"></script>
 <script>
 (function () {
+  /* 網目：枠の横幅を何マスに割るか（縦は 3:4 で正方形になる数） */
+  var GRID = [0, 6, 12];
+  var MAX_S = 6;
+  var state = { grid: 0 };
   var slots = { a: { label: 'Before' }, b: { label: 'After' } };
   var tfPromise = null, modelPromise = null, jobs = Promise.resolve();
 
+  function $(s, r) { return (r || document).querySelector(s); }
+  function col(k) { return $('.col[data-k="' + k + '"]'); }
+
+  /* ---------- 姿勢推定（足首の位置を探すだけに使う） ---------- */
   function loadTf() {
     if (!tfPromise) {
       tfPromise = new Promise(function (res, rej) {
@@ -122,9 +151,8 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
     }
     return modelPromise;
   }
-
-  /* 縦線の位置（画像の横方向 0〜1）：正面・背面は両足首の中央、側面は見えている側の足首 */
-  function plumbX(kp) {
+  /* 正面・背面は両足首の中央、側面（肩幅が狭い）は見えている側の足首。0〜1、見つからなければ null */
+  function ankleX(kp) {
     var la = kp[15], ra = kp[16];
     if (la.s < 0.15 && ra.s < 0.15) return null;
     var shoulderW = Math.abs(kp[5].x - kp[6].x);
@@ -134,66 +162,156 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
     return (la.x + ra.x) / 2;
   }
 
-  function col(k) { return document.querySelector('.col[data-k="' + k + '"]'); }
-
-  function placeLine(k) {
-    var sl = slots[k], c = col(k), f = c.querySelector('.frame'), line = c.querySelector('.plumb');
-    if (sl.px == null || !sl.iw) { line.hidden = true; return; }
-    var fw = f.clientWidth, fh = f.clientHeight;
-    var s = Math.min(fw / sl.iw, fh / sl.ih);
-    var ox = (fw - sl.iw * s) / 2;
-    line.style.left = (ox + sl.px * sl.iw * s) + 'px';
-    line.hidden = false;
+  /* ---------- 写真の位置と拡大 ----------
+     s：枠に収まる大きさを1とした倍率、tx/ty：枠の幅・高さに対するずれ（中央基準） */
+  function fit(sl, fw, fh) {
+    var c = Math.min(fw / sl.iw, fh / sl.ih) * sl.s;
+    var dw = sl.iw * c, dh = sl.ih * c;
+    return { c: c, dw: dw, dh: dh, x: fw / 2 + sl.tx * fw - dw / 2, y: fh / 2 + sl.ty * fh - dh / 2 };
+  }
+  function homePos(sl) {
+    sl.s = 1; sl.ty = 0;
+    if (sl.ax == null) { sl.tx = 0; return; }
+    /* 足首が中央の縦線に乗るように横にずらす */
+    var f = col('a').querySelector('.frame'), fw = f.clientWidth || 3, fh = f.clientHeight || 4;
+    var c = Math.min(fw / sl.iw, fh / sl.ih);
+    sl.tx = -(sl.ax - 0.5) * sl.iw * c / fw;
+  }
+  function apply(k) {
+    var sl = slots[k], f = col(k).querySelector('.frame'), img = f.querySelector('img');
+    if (!sl.img) return;
+    var g = fit(sl, f.clientWidth, f.clientHeight);
+    img.style.width = sl.iw + 'px'; img.style.height = sl.ih + 'px';
+    img.style.transform = 'translate(' + g.x + 'px,' + g.y + 'px) scale(' + g.c + ')';
   }
 
+  /* ---------- 網目 ---------- */
+  function drawGridCss() {
+    var n = GRID[state.grid];
+    document.querySelectorAll('.frame').forEach(function (f) {
+      var g = f.querySelector('.grid');
+      if (!n) { g.style.backgroundImage = 'none'; return; }
+      var cell = f.clientWidth / n;
+      var ln = 'rgba(255,255,255,0.75)';
+      g.style.backgroundImage =
+        'linear-gradient(to right, ' + ln + ' 1px, transparent 1px),' +
+        'linear-gradient(to bottom, ' + ln + ' 1px, transparent 1px)';
+      g.style.backgroundSize = cell + 'px ' + cell + 'px';
+      g.style.backgroundPosition = '0 0';
+      g.style.boxShadow = 'inset 0 0 0 0 transparent';
+    });
+  }
+  document.querySelectorAll('#gridSeg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      state.grid = +b.getAttribute('data-g');
+      document.querySelectorAll('#gridSeg button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      drawGridCss();
+    });
+  });
+
+  /* ---------- 写真を入れる ---------- */
   function setStatus(k, t) { col(k).querySelector('.st').textContent = t; }
-
-  function updateMake() {
-    document.getElementById('makeBtn').disabled = !(slots.a.img && slots.b.img);
-  }
+  function updateMake() { $('#makeBtn').disabled = !(slots.a.img && slots.b.img); }
 
   function setPhoto(k, file) {
     if (!file || !/^image\//.test(file.type)) return;
     var sl = slots[k], c = col(k), img = c.querySelector('img');
     if (sl.url) URL.revokeObjectURL(sl.url);
     sl.url = URL.createObjectURL(file);
-    sl.px = null; sl.img = null;
+    sl.img = null; sl.ax = null;
     var tok = sl.tok = (sl.tok || 0) + 1;
-    img.src = sl.url; img.hidden = false;
-    c.querySelector('.empty').hidden = true;
-    c.querySelector('.plumb').hidden = true;
-    document.getElementById('result').hidden = true;
+    $('#result').hidden = true;
     var im = new Image(); im.src = sl.url;
     im.decode().then(function () {
       if (tok !== sl.tok) return;
       sl.img = im; sl.iw = im.naturalWidth; sl.ih = im.naturalHeight;
-      updateMake();
-      setStatus(k, '縦線を引いています…');
+      homePos(sl);
+      img.src = sl.url; img.hidden = false;
+      c.querySelector('.empty').hidden = true;
+      apply(k); updateMake();
+      setStatus(k, '位置を合わせています…');
       jobs = jobs.then(function () {
         if (tok !== sl.tok) return;
         return ensureModel().then(function () { return window.PoseCore.detect(im); }).then(function (kp) {
           if (tok !== sl.tok) return;
-          sl.px = plumbX(kp);
-          setStatus(k, sl.px == null ? '足元が見つかりませんでした' : '');
-          placeLine(k);
-        }).catch(function () { if (tok === sl.tok) setStatus(k, '読み込めませんでした'); });
+          sl.ax = ankleX(kp);
+          if (sl.ax != null && !sl.moved) { homePos(sl); apply(k); }
+          setStatus(k, '');
+        }).catch(function () { if (tok === sl.tok) setStatus(k, ''); });
       });
     }).catch(function () { setStatus(k, 'この画像は読み込めませんでした'); });
+    sl.moved = false;
+  }
+
+  /* ---------- ドラッグ・ピンチ・ホイール ---------- */
+  function clampS(s) { return Math.min(MAX_S, Math.max(1, s)); }
+  function zoomAt(k, ns, px, py) {
+    var sl = slots[k], f = col(k).querySelector('.frame'), fw = f.clientWidth, fh = f.clientHeight;
+    ns = clampS(ns);
+    var r = ns / sl.s;
+    /* 指の位置(px,py)が同じ場所を指したままになるように */
+    var cx = fw / 2 + sl.tx * fw, cy = fh / 2 + sl.ty * fh;
+    cx = px + (cx - px) * r; cy = py + (cy - py) * r;
+    sl.s = ns; sl.tx = (cx - fw / 2) / fw; sl.ty = (cy - fh / 2) / fh;
+    sl.moved = true; apply(k);
   }
 
   ['a', 'b'].forEach(function (k) {
-    var c = col(k);
+    var c = col(k), f = c.querySelector('.frame'), sl = slots[k];
     var cam = c.querySelector('[data-role="cam"]'), file = c.querySelector('[data-role="file"]');
     c.querySelector('[data-role="shoot"]').addEventListener('click', function () { cam.click(); });
     c.querySelector('[data-role="pick"]').addEventListener('click', function () { file.click(); });
     [cam, file].forEach(function (inp) {
       inp.addEventListener('change', function () { setPhoto(k, inp.files[0]); inp.value = ''; });
     });
-  });
-  window.addEventListener('resize', function () { placeLine('a'); placeLine('b'); });
 
-  /* 書き出し：Before / After を横に並べた1枚 */
-  document.getElementById('makeBtn').addEventListener('click', function () {
+    var pts = {}, last = null, lastTap = 0;
+    function pos(e) { var r = f.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+    function pair() {
+      var ids = Object.keys(pts); if (ids.length < 2) return null;
+      var a = pts[ids[0]], b = pts[ids[1]];
+      return { d: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    }
+    f.addEventListener('pointerdown', function (e) {
+      if (!sl.img) return;
+      f.setPointerCapture(e.pointerId);
+      pts[e.pointerId] = pos(e);
+      last = pair() || pts[e.pointerId];
+      var now = Date.now();
+      if (Object.keys(pts).length === 1 && now - lastTap < 300) { sl.moved = false; homePos(sl); apply(k); }
+      lastTap = now;
+    });
+    f.addEventListener('pointermove', function (e) {
+      if (!pts[e.pointerId] || !sl.img) return;
+      pts[e.pointerId] = pos(e);
+      var fw = f.clientWidth, fh = f.clientHeight, p = pair();
+      if (p) {
+        if (last && last.d) {
+          sl.tx += (p.x - last.x) / fw; sl.ty += (p.y - last.y) / fh;
+          zoomAt(k, sl.s * p.d / last.d, p.x, p.y);
+        }
+        last = p;
+      } else {
+        var q = pts[e.pointerId];
+        if (last) { sl.tx += (q.x - last.x) / fw; sl.ty += (q.y - last.y) / fh; sl.moved = true; apply(k); }
+        last = { x: q.x, y: q.y };
+      }
+    });
+    function up(e) { delete pts[e.pointerId]; var ids = Object.keys(pts); last = ids.length ? pts[ids[0]] : null; }
+    f.addEventListener('pointerup', up);
+    f.addEventListener('pointercancel', up);
+    f.addEventListener('wheel', function (e) {
+      if (!sl.img) return;
+      e.preventDefault();
+      var p = pos(e);
+      zoomAt(k, sl.s * Math.exp(-e.deltaY * 0.0015), p.x, p.y);
+    }, { passive: false });
+  });
+
+  window.addEventListener('resize', function () { apply('a'); apply('b'); drawGridCss(); });
+
+  /* ---------- 書き出し：画面と同じ見え方で Before / After を横に並べる ---------- */
+  $('#makeBtn').addEventListener('click', function () {
     var W = 900, H = 1200, G = 24, P = 32;
     var cv = document.createElement('canvas');
     cv.width = P * 2 + W * 2 + G; cv.height = P * 2 + H;
@@ -201,24 +319,30 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
     c.fillStyle = '#ffffff'; c.fillRect(0, 0, cv.width, cv.height);
     ['a', 'b'].forEach(function (k, i) {
       var sl = slots[k], x = P + i * (W + G), y = P;
+      c.save();
+      c.beginPath(); c.rect(x, y, W, H); c.clip();
       c.fillStyle = '#f2f4f4'; c.fillRect(x, y, W, H);
-      var s = Math.min(W / sl.iw, H / sl.ih), dw = sl.iw * s, dh = sl.ih * s;
-      var ix = x + (W - dw) / 2, iy = y + (H - dh) / 2;
-      c.drawImage(sl.img, ix, iy, dw, dh);
-      if (sl.px != null) {
-        var lx = ix + sl.px * dw;
-        c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(lx - 3, y, 6, H);
-        c.fillStyle = '#19c37d'; c.fillRect(lx - 2, y, 4, H);
+      var g = fit(sl, W, H);
+      c.drawImage(sl.img, x + g.x, y + g.y, g.dw, g.dh);
+      var n = GRID[state.grid];
+      if (n) {
+        var cell = W / n;
+        c.fillStyle = 'rgba(255,255,255,0.75)';
+        for (var gx = 0; gx <= W; gx += cell) c.fillRect(x + gx, y, 2, H);
+        for (var gy = 0; gy <= H; gy += cell) c.fillRect(x, y + gy, W, 2);
       }
-      c.font = '700 40px ' + getComputedStyle(document.body).fontFamily;
+      c.fillStyle = '#19c37d'; c.fillRect(x + W / 2 - 1, y, 2, H);
+      c.restore();
+      c.font = '600 26px ' + getComputedStyle(document.body).fontFamily;
       var tw = c.measureText(sl.label).width;
-      c.fillStyle = 'rgba(30,30,30,0.72)'; c.fillRect(x + 24, y + 24, tw + 40, 64);
-      c.fillStyle = '#ffffff'; c.textBaseline = 'middle'; c.fillText(sl.label, x + 44, y + 57);
+      c.fillStyle = 'rgba(30,30,30,0.62)'; c.fillRect(x + 20, y + 20, tw + 28, 44);
+      c.fillStyle = '#ffffff'; c.textBaseline = 'middle'; c.fillText(sl.label, x + 34, y + 43);
     });
-    var out = document.getElementById('out');
-    out.src = cv.toDataURL('image/jpeg', 0.92);
-    document.getElementById('result').hidden = false;
+    $('#out').src = cv.toDataURL('image/jpeg', 0.92);
+    $('#result').hidden = false;
   });
+
+  drawGridCss();
 })();
 </script>
 <script>
