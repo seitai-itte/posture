@@ -344,7 +344,7 @@ output { min-width: 3.6em; text-align: right; font-variant-numeric: tabular-nums
       <button type="button" data-mode="slide" aria-pressed="false">スライダー</button>
     </div>
     <div class="checks">
-      <label class="check"><input type="checkbox" id="ovToggle" checked> 検査の点と線</label>
+      <label class="check"><input type="checkbox" id="ovToggle" checked> 縦線</label>
       <label class="check"><input type="checkbox" id="gridToggle"> 補助線</label>
     </div>
   </div>
@@ -584,18 +584,7 @@ output { min-width: 3.6em; text-align: right; font-variant-numeric: tabular-nums
     var h = '';
     h += '<line x1="' + g.plumb + '" y1="0" x2="' + g.plumb + '" y2="' + fh + '" stroke="rgba(0,0,0,0.3)" stroke-width="4"/>';
     h += '<line x1="' + g.plumb + '" y1="0" x2="' + g.plumb + '" y2="' + fh + '" stroke="#19c37d" stroke-width="2"/>';
-    g.lines.forEach(function (l) {
-      h += '<line x1="' + l[0].x + '" y1="' + l[0].y + '" x2="' + l[1].x + '" y2="' + l[1].y + '" stroke="rgba(0,0,0,0.35)" stroke-width="5.5" stroke-linecap="round"/>';
-    });
-    g.lines.forEach(function (l) {
-      h += '<line x1="' + l[0].x + '" y1="' + l[0].y + '" x2="' + l[1].x + '" y2="' + l[1].y + '" stroke="#fff" stroke-width="3" stroke-linecap="round"/>';
-    });
-    g.dots.forEach(function (d) {
-      h += '<circle cx="' + d.x + '" cy="' + d.y + '" r="5.5" fill="#fff" stroke="rgba(0,0,0,0.5)" stroke-width="1.2"/>';
-    });
-    g.dots.forEach(function (d) {
-      h += '<circle data-k="' + k + '" data-pt="' + d.i + '" cx="' + d.x + '" cy="' + d.y + '" r="15" fill="transparent"/>';
-    });
+    /* 縦線のみ表示（点と線は表示しない） */
     svg.innerHTML = h;
   }
 
@@ -681,7 +670,7 @@ output { min-width: 3.6em; text-align: right; font-variant-numeric: tabular-nums
   }
   function setHint() {
     $('#hint').textContent = state.mode === 'side'
-      ? '白い丸をドラッグすると点の位置を直せます。それ以外のドラッグで写真が動き、ピンチやホイールで拡大できます。'
+      ? 'ドラッグで写真が動き、ピンチやホイールで拡大できます。'
       : '丸いつまみで境目を動かします。写真の移動・拡大と、点の修正は、拡大した状態で行うと正確です。';
     $('#measNote').hidden = !state.show;
   }
@@ -1026,15 +1015,6 @@ output { min-width: 3.6em; text-align: right; font-variant-numeric: tabular-nums
     c.beginPath(); c.moveTo(gm.plumb, y); c.lineTo(gm.plumb, y + H); c.stroke();
     c.strokeStyle = '#19c37d'; c.lineWidth = 4;
     c.beginPath(); c.moveTo(gm.plumb, y); c.lineTo(gm.plumb, y + H); c.stroke();
-    c.strokeStyle = 'rgba(0,0,0,0.35)'; c.lineWidth = 11;
-    gm.lines.forEach(function (l) { c.beginPath(); c.moveTo(l[0].x, l[0].y); c.lineTo(l[1].x, l[1].y); c.stroke(); });
-    c.strokeStyle = '#fff'; c.lineWidth = 6;
-    gm.lines.forEach(function (l) { c.beginPath(); c.moveTo(l[0].x, l[0].y); c.lineTo(l[1].x, l[1].y); c.stroke(); });
-    gm.dots.forEach(function (d) {
-      c.beginPath(); c.arc(d.x, d.y, 10, 0, Math.PI * 2);
-      c.fillStyle = '#fff'; c.fill();
-      c.strokeStyle = 'rgba(0,0,0,0.5)'; c.lineWidth = 2; c.stroke();
-    });
     c.restore();
     var t = sideLabels(sl);
     c.save();
