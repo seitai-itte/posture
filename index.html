@@ -11,716 +11,101 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
-<title>ビフォーアフター比較</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
+<title>姿勢比較</title>
 <style>
-/* Layout: 1 column work surface (max 760px). Stage first, per-photo inputs and measurements aligned under the two frame columns, then adjustments and export. */
 :root {
-  --bg: #eef1f0;
-  --surface: #ffffff;
-  --fg: #1b2422;
-  --muted: #5a6763;
-  --line: #cfd7d4;
-  --accent: #176a62;
-  --accent-fg: #ffffff;
-  --frame: #dfe5e2;
-  --mark: #ff5a36;
-  --font-display: 'Zen Kaku Gothic New', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
-  --font-body: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
+  --bg: #ffffff;
+  --frame: #f2f4f4;
+  --fg: #1e1e1e;
+  --muted: #6b7471;
+  --line: #dde2e1;
+  --accent: #3B5C6A;
+  --plumb: #19c37d;
+  --font: 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', sans-serif;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #101514;
-    --surface: #18201e;
-    --fg: #e4ebe9;
-    --muted: #8fa09b;
-    --line: #2b3733;
-    --accent: #5ec2b6;
-    --accent-fg: #0b1a18;
-    --frame: #202a28;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #101514;
-  --surface: #18201e;
-  --fg: #e4ebe9;
-  --muted: #8fa09b;
-  --line: #2b3733;
-  --accent: #5ec2b6;
-  --accent-fg: #0b1a18;
-  --frame: #202a28;
-  color-scheme: dark;
-}
-
 * { box-sizing: border-box; }
-[hidden] { display: none !important; }
-body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-body);
-  font-size: 14px;
-  line-height: 1.6;
-}
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.6; -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.app {
-  max-width: 760px;
-  margin: 0 auto;
-  padding-inline: 16px;
-  padding-block: 20px 36px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.head { display: flex; flex-direction: column; gap: 2px; }
-h1 {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 22px;
-  letter-spacing: 0.02em;
-  text-wrap: balance;
-}
-h2 {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 0.04em;
-}
-.note, .hint { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.6; }
+.app { max-width: 760px; margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 16px 40px; display: flex; flex-direction: column; gap: 20px; }
+h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 
-.bar { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
-.checks { display: inline-flex; gap: 4px 18px; flex-wrap: wrap; }
-.seg {
-  display: inline-flex;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  overflow: hidden;
-  background: var(--surface);
-}
-.seg button {
-  min-height: 40px;
-  padding: 0 14px;
-  border: 0;
-  border-left: 1px solid var(--line);
-  background: transparent;
-  color: var(--fg);
-  font: inherit;
-  font-weight: 500;
-  cursor: pointer;
-}
-.seg button:first-child { border-left: 0; }
-.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
-.check { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; cursor: pointer; font-weight: 500; }
-.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.col { display: flex; flex-direction: column; gap: 10px; }
+.frame { position: relative; aspect-ratio: 3 / 4; background: var(--frame); border-radius: 8px; overflow: hidden; }
+.frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.frame .plumb { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--plumb); box-shadow: 0 0 0 1px rgba(0,0,0,0.18); }
+.frame .lbl { position: absolute; top: 10px; left: 10px; padding: 2px 10px; border-radius: 4px; background: rgba(30,30,30,0.72); color: #fff; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; }
+.frame .empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; }
+.frame .st { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; color: #fff; font-size: 12px; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
 
-/* Stage */
-.stage { --pos: 50%; }
-.stage.side { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.stage.slide {
-  position: relative;
-  aspect-ratio: var(--ar);
-  border-radius: 6px;
-  overflow: hidden;
-  background: var(--frame);
-}
-.frame {
-  position: relative;
-  overflow: hidden;
-  min-width: 0;
-  background: var(--frame);
-  border-radius: 6px;
-  aspect-ratio: var(--ar);
-}
-.frame[data-has="1"] { cursor: grab; touch-action: none; }
-.frame[data-has="1"]:active { cursor: grabbing; }
-.stage.side .frame.active { outline: 2px solid var(--accent); outline-offset: 2px; }
-.stage.slide .frame { position: absolute; inset: 0; aspect-ratio: auto; border-radius: 0; }
-.stage.slide .frame.b { clip-path: inset(0 0 0 var(--pos)); }
-.ph {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform-origin: 50% 50%;
-  user-select: none;
-  -webkit-user-drag: none;
-  pointer-events: none;
-}
-.empty {
-  position: absolute;
-  inset: 6px;
-  display: grid;
-  place-items: center;
-  padding: 8px;
-  border: 2px dashed var(--line);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--muted);
-  font: inherit;
-  font-weight: 500;
-  cursor: pointer;
-}
-.cap, .tag, .sd {
-  position: absolute;
-  max-width: calc(100% - 16px);
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: rgba(16, 21, 20, 0.72);
-  color: #fff;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 12px;
-  line-height: 1.6;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  pointer-events: none;
-}
-.cap { top: 8px; left: 8px; }
-.tag { top: 34px; left: 8px; font-weight: 500; background: rgba(255, 255, 255, 0.82); color: #1b2422; }
-.stage.slide .frame.b .cap, .stage.slide .frame.b .tag { left: auto; right: 8px; }
-.sd { bottom: 8px; min-width: 30px; text-align: center; }
-.sd.l { left: 8px; }
-.sd.r { right: 8px; }
-.stage.slide .sd, .sd[hidden] { display: none; }
+.btns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.btn { min-height: 44px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--fg); font: inherit; font-weight: 600; cursor: pointer; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn:disabled { opacity: 0.4; cursor: default; }
 
-.grid {
-  position: absolute;
-  inset: 0;
-  display: none;
-  pointer-events: none;
-  opacity: 0.85;
-  background-image:
-    linear-gradient(to right, transparent calc(50% - 1px), var(--mark) calc(50% - 1px), var(--mark) calc(50% + 1px), transparent calc(50% + 1px)),
-    linear-gradient(to bottom, transparent calc(25% - 0.5px), var(--mark) calc(25% - 0.5px), var(--mark) calc(25% + 0.5px), transparent calc(25% + 0.5px)),
-    linear-gradient(to bottom, transparent calc(50% - 0.5px), var(--mark) calc(50% - 0.5px), var(--mark) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
-    linear-gradient(to bottom, transparent calc(75% - 0.5px), var(--mark) calc(75% - 0.5px), var(--mark) calc(75% + 0.5px), transparent calc(75% + 0.5px));
-}
-.stage.grid-on .grid { display: block; }
-
-/* 検査の点と線（SVG）。点だけがドラッグを受ける */
-.ov { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
-.ov [data-pt] { pointer-events: all; cursor: move; }
-
-.divider { display: none; }
-.stage.slide .divider {
-  display: block;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: var(--pos);
-  width: 44px;
-  margin-left: -22px;
-  z-index: 3;
-  cursor: ew-resize;
-  touch-action: none;
-}
-.divider::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 2px;
-  margin-left: -1px;
-  background: #fff;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28);
-}
-.knob {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 36px;
-  height: 36px;
-  margin: -18px 0 0 -18px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
-  display: grid;
-  place-items: center;
-}
-
-/* Per-photo inputs */
-.slots { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.slot { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.slot label, .slot .lb { color: var(--muted); font-size: 12px; }
-.txt {
-  width: 100%;
-  min-width: 0;
-  height: 42px;
-  padding: 0 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--fg);
-  font: inherit;
-  font-size: 16px;
-}
-.txt::placeholder { color: var(--muted); }
-.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.btn {
-  min-height: 44px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--fg);
-  font: inherit;
-  font-weight: 500;
-  cursor: pointer;
-}
-.btn:hover { border-color: var(--accent); }
-.btn:disabled { opacity: 0.55; cursor: default; }
-.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; font-weight: 700; }
-.vseg { display: flex; }
-.vseg button { flex: 1; padding: 0 4px; }
-.st { margin: 0; min-height: 3.2em; color: var(--muted); font-size: 12px; line-height: 1.6; }
-.meas { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font-size: 12.5px; padding: 10px; background: var(--surface); border-radius: 8px; min-width: 0; }
-.meas:empty { display: none; }
-.meas .k { color: var(--muted); }
-.meas .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; min-width: 0; }
-
-/* Panels */
-.panel {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
-}
-.row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.rl { width: 3.6em; color: var(--muted); font-size: 13px; }
-.row input[type="range"] { flex: 1; min-width: 120px; accent-color: var(--accent); }
-output { min-width: 3.6em; text-align: right; font-variant-numeric: tabular-nums; }
-.btnrow .btn { flex: 1; min-width: 130px; }
-.out {
-  display: block;
-  width: 100%;
-  height: auto;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-}
 .result { display: flex; flex-direction: column; gap: 8px; }
-
-.toast {
-  position: fixed;
-  left: 50%;
-  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-  transform: translate(-50%, 12px);
-  max-width: calc(100% - 32px);
-  padding: 10px 16px;
-  border-radius: 8px;
-  background: var(--fg);
-  color: var(--bg);
-  font-weight: 500;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.18s, transform 0.18s;
-  z-index: 10;
-}
-.toast.show { opacity: 1; transform: translate(-50%, 0); }
-@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+.result img { width: 100%; border-radius: 8px; border: 1px solid var(--line); }
+.hint { margin: 0; color: var(--muted); font-size: 12.5px; }
 </style>
 </head>
 <body>
-
 <main class="app">
-  <header class="head">
-    <h1>ビフォーアフター比較</h1>
-    <p class="note">写真はこの端末の中だけで処理します。どこにも送信されません。</p>
-  </header>
+  <h1>姿勢比較</h1>
 
-  <div class="bar">
-    <div class="seg" id="modeSeg" role="group" aria-label="表示のしかた">
-      <button type="button" data-mode="side" aria-pressed="true">横並び</button>
-      <button type="button" data-mode="slide" aria-pressed="false">スライダー</button>
-    </div>
-    <div class="checks">
-      <label class="check"><input type="checkbox" id="ovToggle" checked> 縦線</label>
-      <label class="check"><input type="checkbox" id="gridToggle"> 補助線</label>
-    </div>
-  </div>
-
-  <div id="stage" class="stage side">
-    <div class="frame a" data-k="a">
-      <img class="ph" alt="" hidden>
-      <button class="empty" type="button" hidden>写真を追加</button>
-      <div class="grid"></div>
-      <svg class="ov" aria-hidden="true"></svg>
-      <span class="cap"></span>
-      <span class="tag" hidden>サンプル</span>
-      <span class="sd l" hidden></span><span class="sd r" hidden></span>
-    </div>
-    <div class="frame b" data-k="b">
-      <img class="ph" alt="" hidden>
-      <button class="empty" type="button" hidden>写真を追加</button>
-      <div class="grid"></div>
-      <svg class="ov" aria-hidden="true"></svg>
-      <span class="cap"></span>
-      <span class="tag" hidden>サンプル</span>
-      <span class="sd l" hidden></span><span class="sd r" hidden></span>
-    </div>
-    <div class="divider" id="divider" role="slider" tabindex="0" aria-label="境目の位置" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
-      <span class="knob">
-        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5 2 10l5 5V5zm6 0v10l5-5-5-5z" fill="#1b2422"/></svg>
-      </span>
-    </div>
-  </div>
-  <p class="hint" id="hint"></p>
-
-  <div class="slots">
-    <div class="slot" data-k="a">
-      <label for="nameA">左の名前</label>
-      <input class="txt name" id="nameA" type="text" value="ビフォー" maxlength="20" autocomplete="off">
+  <div class="pair">
+    <div class="col" data-k="a">
+      <div class="frame">
+        <span class="empty">写真なし</span>
+        <img alt="" hidden>
+        <span class="plumb" hidden></span>
+        <span class="lbl">Before</span>
+        <span class="st" aria-live="polite"></span>
+      </div>
       <div class="btns">
         <button class="btn" type="button" data-role="shoot">撮影</button>
         <button class="btn" type="button" data-role="pick">選ぶ</button>
       </div>
-      <input class="txt paste" type="text" placeholder="ここに貼り付け" aria-label="左の写真を貼り付ける" autocomplete="off">
       <input type="file" accept="image/*" capture="environment" data-role="cam" hidden>
       <input type="file" accept="image/*" data-role="file" hidden>
-      <span class="lb">写真の向き</span>
-      <div class="seg vseg" role="group" aria-label="左の写真の向き">
-        <button type="button" data-v="front" aria-pressed="true">正面</button>
-        <button type="button" data-v="back" aria-pressed="false">背面</button>
-        <button type="button" data-v="side" aria-pressed="false">側面</button>
-      </div>
-      <button class="btn primary" type="button" data-role="auto">自動で点を置く</button>
-      <p class="st" aria-live="polite"></p>
-      <div class="meas"></div>
     </div>
-    <div class="slot" data-k="b">
-      <label for="nameB">右の名前</label>
-      <input class="txt name" id="nameB" type="text" value="アフター" maxlength="20" autocomplete="off">
+    <div class="col" data-k="b">
+      <div class="frame">
+        <span class="empty">写真なし</span>
+        <img alt="" hidden>
+        <span class="plumb" hidden></span>
+        <span class="lbl">After</span>
+        <span class="st" aria-live="polite"></span>
+      </div>
       <div class="btns">
         <button class="btn" type="button" data-role="shoot">撮影</button>
         <button class="btn" type="button" data-role="pick">選ぶ</button>
       </div>
-      <input class="txt paste" type="text" placeholder="ここに貼り付け" aria-label="右の写真を貼り付ける" autocomplete="off">
       <input type="file" accept="image/*" capture="environment" data-role="cam" hidden>
       <input type="file" accept="image/*" data-role="file" hidden>
-      <span class="lb">写真の向き</span>
-      <div class="seg vseg" role="group" aria-label="右の写真の向き">
-        <button type="button" data-v="front" aria-pressed="true">正面</button>
-        <button type="button" data-v="back" aria-pressed="false">背面</button>
-        <button type="button" data-v="side" aria-pressed="false">側面</button>
-      </div>
-      <button class="btn primary" type="button" data-role="auto">自動で点を置く</button>
-      <p class="st" aria-live="polite"></p>
-      <div class="meas"></div>
     </div>
   </div>
-  <p class="hint" id="measNote">数値は、足の中央を通る緑の垂直線を基準にしています。ずれは「目から足首までの長さ」に対する割合です。写真の撮り方で変わるので、同じ位置・距離から撮った写真どうしで比べてください。</p>
 
-  <section class="panel" aria-labelledby="adjH">
-    <h2 id="adjH">調整</h2>
-    <div class="row">
-      <span class="rl">対象</span>
-      <div class="seg" id="targetSeg" role="group" aria-label="調整する写真">
-        <button type="button" data-k="a" aria-pressed="true">左</button>
-        <button type="button" data-k="b" aria-pressed="false">右</button>
-      </div>
-    </div>
-    <div class="row">
-      <label class="rl" for="zoom">拡大</label>
-      <input type="range" id="zoom" min="50" max="500" step="1" value="100">
-      <output id="zoomOut" for="zoom">100%</output>
-    </div>
-    <div class="row">
-      <span class="rl">縦横比</span>
-      <div class="seg" id="arSeg" role="group" aria-label="縦横比">
-        <button type="button" data-ar="3:4" aria-pressed="true">3:4</button>
-        <button type="button" data-ar="9:16" aria-pressed="false">9:16</button>
-        <button type="button" data-ar="1:1" aria-pressed="false">1:1</button>
-      </div>
-    </div>
-    <div class="row btnrow">
-      <button class="btn" type="button" id="resetBtn">位置と拡大を戻す</button>
-      <button class="btn" type="button" id="swapBtn">左右を入れ替え</button>
-    </div>
-  </section>
-
-  <section class="panel" aria-labelledby="saveH">
-    <h2 id="saveH">保存</h2>
-    <button class="btn primary" type="button" id="makeBtn">並べた1枚の画像にする</button>
-    <div class="result" id="result" hidden>
-      <img class="out" id="out" alt="並べた比較画像">
-      <p class="hint">画像を長押しして保存します（パソコンは右クリック）。</p>
-    </div>
-  </section>
+  <button class="btn primary" type="button" id="makeBtn" disabled>1枚の画像にする</button>
+  <div class="result" id="result" hidden>
+    <img id="out" alt="Before/Afterを並べた画像">
+    <p class="hint">画像を長押しして保存します（パソコンは右クリック）。</p>
+  </div>
 </main>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="pose-core.js"></script>
-
 <script>
 (function () {
-  var $ = function (s) { return document.querySelector(s); };
-  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
-  var clamp = function (v, lo, hi) { return Math.min(hi, Math.max(lo, v)); };
-  var AR = { '3:4': [3, 4], '9:16': [9, 16], '1:1': [1, 1] };
-  var FONT = "'Noto Sans JP','Hiragino Sans','Yu Gothic','Meiryo',sans-serif";
-  var SIDE = { a: '左', b: '右' };
-  var TF_URL = 'tf.min.js';
-
-  /* 点の番号：0鼻 1左目 2右目 3左耳 4右耳 5左肩 6右肩 7左肘 8右肘 9左手首 10右手首 11左腰 12右腰 13左膝 14右膝 15左足首 16右足首
-     「左・右」は写真の人物から見た左右。正面から撮ると、人物の左は画像の右側に写る。 */
-  var CHAIN = { L: [3, 5, 11, 13, 15], R: [4, 6, 12, 14, 16] };
-
-  function sampleSrc(good) {
-    var sl = good ? 130 : 142, sr = good ? 130 : 118, hx = good ? 150 : 164, hy = good ? 72 : 80;
-    var c = '#5f6f6a';
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400">' +
-      '<rect width="300" height="400" fill="#e3e8e6"/><rect y="374" width="300" height="26" fill="#cdd5d2"/>' +
-      '<line x1="' + hx + '" y1="98" x2="150" y2="' + ((sl + sr) / 2) + '" stroke="' + c + '" stroke-width="16" stroke-linecap="round"/>' +
-      '<circle cx="' + hx + '" cy="' + hy + '" r="26" fill="' + c + '"/>' +
-      '<polygon points="94,' + sl + ' 206,' + sr + ' 190,252 110,252" fill="' + c + '"/>' +
-      '<line x1="92" y1="' + (sl + 8) + '" x2="84" y2="234" stroke="' + c + '" stroke-width="14" stroke-linecap="round"/>' +
-      '<line x1="208" y1="' + (sr + 8) + '" x2="216" y2="234" stroke="' + c + '" stroke-width="14" stroke-linecap="round"/>' +
-      '<rect x="112" y="250" width="34" height="126" rx="6" fill="' + c + '"/>' +
-      '<rect x="154" y="250" width="34" height="126" rx="6" fill="' + c + '"/></svg>';
-    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-  }
-  function sampleKp(good) {
-    var sl = good ? 130 : 142, sr = good ? 130 : 118, hx = good ? 150 : 164, hy = good ? 72 : 80;
-    var P = function (x, y) { return { x: x / 300, y: y / 400, s: 0.9 }; };
-    return [
-      P(hx, hy), P(hx + 9, hy - 4), P(hx - 9, hy - 4), P(hx + 24, hy + 2), P(hx - 24, hy + 2),
-      P(200, sr + 4), P(100, sl + 4), P(212, 190), P(88, 190), P(216, 234), P(84, 234),
-      P(170, 252), P(130, 252), P(171, 314), P(129, 314), P(171, 372), P(129, 372)
-    ];
-  }
-  /* 検出できなかったときの目安の位置（全身が中央に立つ想定） */
-  function templateKp() {
-    var P = function (x, y) { return { x: x, y: y, s: 0.5 }; };
-    return [
-      P(0.5, 0.12), P(0.53, 0.11), P(0.47, 0.11), P(0.57, 0.125), P(0.43, 0.125),
-      P(0.63, 0.25), P(0.37, 0.25), P(0.66, 0.38), P(0.34, 0.38), P(0.66, 0.5), P(0.34, 0.5),
-      P(0.57, 0.5), P(0.43, 0.5), P(0.57, 0.72), P(0.43, 0.72), P(0.57, 0.9), P(0.43, 0.9)
-    ];
-  }
-
-  function newSlot(good) {
-    return { src: sampleSrc(good), owned: false, s: 1, x: 0, y: 0, sample: true, iw: 300, ih: 400,
-      kp: sampleKp(good), view: 'front', chain: 'L', facing: 'right', status: 'sample', tok: 0 };
-  }
-  var state = {
-    mode: 'side', grid: false, show: true, ar: '3:4', active: 'a', pos: 50,
-    slots: { a: newSlot(false), b: newSlot(true) }
-  };
-
-  var stage = $('#stage'), divider = $('#divider'), zoom = $('#zoom'), zoomOut = $('#zoomOut');
-  var toastEl = $('#toast'), toastTimer = null;
-  var frames = {}, slotEls = {};
-  $$('.frame').forEach(function (el) {
-    frames[el.dataset.k] = {
-      el: el, img: el.querySelector('.ph'), empty: el.querySelector('.empty'), ov: el.querySelector('.ov'),
-      cap: el.querySelector('.cap'), tag: el.querySelector('.tag'), sdl: el.querySelector('.sd.l'), sdr: el.querySelector('.sd.r')
-    };
-  });
-  $$('.slot').forEach(function (el) {
-    slotEls[el.dataset.k] = { el: el, st: el.querySelector('.st'), meas: el.querySelector('.meas'), auto: el.querySelector('[data-role="auto"]') };
-  });
-
-  function toast(msg) {
-    toastEl.textContent = msg;
-    toastEl.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2400);
-  }
-  function setPressed(group, attr, val) {
-    $$(group + ' button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute(attr) === val)); });
-  }
-
-  /* ---------- 座標：画像(0〜1) ⇄ 枠の中のpx ---------- */
-  function mapper(fw, fh, iw, ih, s, tx, ty) {
-    var c = Math.max(fw / iw, fh / ih), dw = iw * c, dh = ih * c;
-    return {
-      h: fh,
-      fwd: function (u, v) { return [fw / 2 + tx * fw + s * (u - 0.5) * dw, fh / 2 + ty * fh + s * (v - 0.5) * dh]; },
-      inv: function (X, Y) { return [(X - fw / 2 - tx * fw) / s / dw + 0.5, (Y - fh / 2 - ty * fh) / s / dh + 0.5]; }
-    };
-  }
-  function frameMapper(k) {
-    var sl = state.slots[k], f = frames[k].el;
-    return mapper(f.clientWidth || 1, f.clientHeight || 1, sl.iw, sl.ih, sl.s, sl.x, sl.y);
-  }
-
-  /* ---------- 検査の図形（SVGと書き出しで共通） ---------- */
-  function shapes(sl, M) {
-    var kp = sl.kp;
-    var P = function (i) { var q = M.fwd(kp[i].x, kp[i].y); return { x: q[0], y: q[1], i: i }; };
-    var L = [], D = [], px = 0;
-    function line(a, b) { L.push([a, b]); }
-    if (sl.view === 'side') {
-      var ids = CHAIN[sl.chain], pts = ids.map(P);
-      for (var j = 0; j < pts.length - 1; j++) line(pts[j], pts[j + 1]);
-      D = pts;
-      px = pts[4].x;
-    } else {
-      var e1 = P(1), e2 = P(2), s1 = P(5), s2 = P(6), h1 = P(11), h2 = P(12), k1 = P(13), k2 = P(14), a1 = P(15), a2 = P(16);
-      line(e1, e2); line(s1, s2); line(h1, h2); line(s1, h1); line(s2, h2);
-      line(h1, k1); line(k1, a1); line(h2, k2); line(k2, a2);
-      D = [e1, e2, s1, s2, h1, h2, k1, k2, a1, a2];
-      px = (a1.x + a2.x) / 2;
-    }
-    return { lines: L, dots: D, plumb: px, h: M.h };
-  }
-
-  function renderOverlay(k) {
-    var f = frames[k], sl = state.slots[k], svg = f.ov;
-    var fw = f.el.clientWidth, fh = f.el.clientHeight;
-    if (!state.show || !sl.kp || !sl.src || !fw) { svg.innerHTML = ''; return; }
-    var M = mapper(fw, fh, sl.iw, sl.ih, sl.s, sl.x, sl.y), g = shapes(sl, M);
-    svg.setAttribute('viewBox', '0 0 ' + fw + ' ' + fh);
-    var h = '';
-    h += '<line x1="' + g.plumb + '" y1="0" x2="' + g.plumb + '" y2="' + fh + '" stroke="rgba(0,0,0,0.3)" stroke-width="4"/>';
-    h += '<line x1="' + g.plumb + '" y1="0" x2="' + g.plumb + '" y2="' + fh + '" stroke="#19c37d" stroke-width="2"/>';
-    /* 縦線のみ表示（点と線は表示しない） */
-    svg.innerHTML = h;
-  }
-
-  /* ---------- 計測 ---------- */
-  function sideLabels(sl) {
-    var v = sl.view;
-    if (v === 'front') return ['右', '左'];
-    if (v === 'back') return ['左', '右'];
-    return sl.facing === 'right' ? ['後', '前'] : ['前', '後'];
-  }
-  function tiltText(pl, pr, iw, ih) {
-    var dy = (pl.y - pr.y) * ih, dx = Math.abs(pl.x - pr.x) * iw;
-    var deg = Math.atan2(dy, Math.max(dx, 1)) * 180 / Math.PI;
-    if (Math.abs(deg) < 0.3) return '水平';
-    return (deg > 0 ? '右が高い ' : '左が高い ') + Math.abs(deg).toFixed(1) + '°';
-  }
-  function offText(dxPct, pos, neg) {
-    if (Math.abs(dxPct) < 0.3) return '中央';
-    return (dxPct > 0 ? pos : neg) + ' ' + Math.abs(dxPct).toFixed(1) + '%';
-  }
-  function measure(sl) {
-    var kp = sl.kp; if (!kp) return [];
-    var iw = sl.iw, ih = sl.ih, rows = [];
-    if (sl.view === 'side') {
-      var ids = CHAIN[sl.chain], a = kp[ids[4]], ear = kp[ids[0]];
-      var H = Math.max(Math.abs(a.y - ear.y) * ih, 1);
-      var fr = sl.facing === 'right';
-      [['耳', 0], ['肩', 1], ['股関節', 2], ['膝', 3]].forEach(function (r) {
-        var p = kp[ids[r[1]]], d = (p.x - a.x) * iw / H * 100;
-        rows.push([r[0], offText(d, fr ? '前へ' : '後ろへ', fr ? '後ろへ' : '前へ')]);
-      });
-    } else {
-      var ea = { x: (kp[1].x + kp[2].x) / 2, y: (kp[1].y + kp[2].y) / 2 };
-      var an = { x: (kp[15].x + kp[16].x) / 2, y: (kp[15].y + kp[16].y) / 2 };
-      var H2 = Math.max(Math.abs(an.y - ea.y) * ih, 1);
-      var pos = sl.view === 'front' ? '左へ' : '右へ', neg = sl.view === 'front' ? '右へ' : '左へ';
-      var mid = function (i, j) { return { x: (kp[i].x + kp[j].x) / 2, y: (kp[i].y + kp[j].y) / 2 }; };
-      rows.push(['目の傾き', tiltText(kp[1], kp[2], iw, ih)]);
-      rows.push(['肩の傾き', tiltText(kp[5], kp[6], iw, ih)]);
-      rows.push(['骨盤の傾き', tiltText(kp[11], kp[12], iw, ih)]);
-      rows.push(['頭のずれ', offText((ea.x - an.x) * iw / H2 * 100, pos, neg)]);
-      rows.push(['肩のずれ', offText((mid(5, 6).x - an.x) * iw / H2 * 100, pos, neg)]);
-      rows.push(['骨盤のずれ', offText((mid(11, 12).x - an.x) * iw / H2 * 100, pos, neg)]);
-    }
-    return rows;
-  }
-  function renderMeas(k) {
-    var sl = state.slots[k], el = slotEls[k].meas;
-    if (!state.show || !sl.kp || !sl.src) { el.innerHTML = ''; return; }
-    el.innerHTML = measure(sl).map(function (r) { return '<span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span>'; }).join('');
-  }
-  function renderChips(k) {
-    var f = frames[k], sl = state.slots[k];
-    var on = state.show && sl.kp && sl.src;
-    f.sdl.hidden = f.sdr.hidden = !on;
-    if (on) { var t = sideLabels(sl); f.sdl.textContent = t[0]; f.sdr.textContent = t[1]; }
-  }
-  var MSG = {
-    sample: 'サンプルです。写真を入れると、自動で点を置きます。',
-    busy: '点を置いています…（初回は数秒かかります）',
-    ok: '点を置きました。ずれている白い丸はドラッグで直せます。',
-    fail: '自動で見つけられなかったので、目安の位置に置きました。白い丸を体に合わせてください。',
-    edited: '点を動かしました。「自動で点を置く」で最初の位置に戻せます。'
-  };
-  function renderStatus(k) {
-    var sl = state.slots[k], c = slotEls[k];
-    c.st.textContent = MSG[sl.status] || '';
-    c.auto.disabled = sl.status === 'busy' || !sl.src;
-    setPressed('.slot[data-k="' + k + '"] .vseg', 'data-v', sl.view);
-  }
-  function renderPhotoParts(k) {
-    renderOverlay(k); renderMeas(k); renderChips(k); renderStatus(k);
-  }
-
-  function applyTransform(k) {
-    var sl = state.slots[k];
-    frames[k].img.style.transform = 'translate(' + (sl.x * 100) + '%, ' + (sl.y * 100) + '%) scale(' + sl.s + ')';
-  }
-  function syncZoom() {
-    var s = state.slots[state.active].s;
-    zoom.value = Math.round(s * 100);
-    zoomOut.textContent = Math.round(s * 100) + '%';
-  }
-  function setHint() {
-    $('#hint').textContent = state.mode === 'side'
-      ? 'ドラッグで写真が動き、ピンチやホイールで拡大できます。'
-      : '丸いつまみで境目を動かします。写真の移動・拡大と、点の修正は、拡大した状態で行うと正確です。';
-    $('#measNote').hidden = !state.show;
-  }
-
-  function render() {
-    stage.className = 'stage ' + state.mode + (state.grid ? ' grid-on' : '');
-    stage.style.setProperty('--ar', AR[state.ar][0] + ' / ' + AR[state.ar][1]);
-    stage.style.setProperty('--pos', state.pos + '%');
-    ['a', 'b'].forEach(function (k) {
-      var f = frames[k], sl = state.slots[k], img = f.img;
-      if (sl.src) {
-        if (img.dataset.src !== sl.src) { img.dataset.src = sl.src; img.src = sl.src; }
-        img.hidden = false;
-        f.empty.hidden = true;
-      } else {
-        img.hidden = true;
-        img.removeAttribute('src');
-        delete img.dataset.src;
-        f.empty.hidden = false;
-      }
-      applyTransform(k);
-      f.el.dataset.has = sl.src ? '1' : '0';
-      f.tag.hidden = !sl.sample;
-      f.el.classList.toggle('active', state.active === k);
-    });
-    setPressed('#modeSeg', 'data-mode', state.mode);
-    setPressed('#arSeg', 'data-ar', state.ar);
-    setPressed('#targetSeg', 'data-k', state.active);
-    $('#gridToggle').checked = state.grid;
-    $('#ovToggle').checked = state.show;
-    syncZoom();
-    setHint();
-    requestAnimationFrame(function () { ['a', 'b'].forEach(renderPhotoParts); });
-  }
-
-  function setActive(k) {
-    state.active = k;
-    ['a', 'b'].forEach(function (x) { frames[x].el.classList.toggle('active', x === k); });
-    setPressed('#targetSeg', 'data-k', k);
-    syncZoom();
-  }
-
-  /* ---------- 姿勢の検出（端末の中で動かす） ---------- */
+  var slots = { a: { label: 'Before' }, b: { label: 'After' } };
   var tfPromise = null, modelPromise = null, jobs = Promise.resolve();
+
   function loadTf() {
-    if (window.tf) return Promise.resolve();
     if (!tfPromise) {
       tfPromise = new Promise(function (res, rej) {
         var s = document.createElement('script');
-        s.src = TF_URL; s.onload = res; s.onerror = function () { tfPromise = null; rej(new Error('tfjs')); };
+        s.src = 'tf.min.js'; s.onload = res;
+        s.onerror = function () { tfPromise = null; rej(new Error('tfjs')); };
         document.head.appendChild(s);
       });
     }
@@ -738,349 +123,104 @@ output { min-width: 3.6em; text-align: right; font-variant-numeric: tabular-nums
     return modelPromise;
   }
 
-  function meanScore(kp, ids) { return ids.reduce(function (a, i) { return a + kp[i].s; }, 0) / ids.length; }
-  function classify(sl) {
-    var kp = sl.kp, iw = sl.iw, ih = sl.ih;
-    var sw = Math.abs(kp[5].x - kp[6].x) * iw;
-    var torso = Math.abs((kp[11].y + kp[12].y) / 2 - (kp[5].y + kp[6].y) / 2) * ih;
-    sl.chain = meanScore(kp, CHAIN.L) >= meanScore(kp, CHAIN.R) ? 'L' : 'R';
-    var earX = (kp[3].s + kp[4].s) > 0 ? (kp[3].x * kp[3].s + kp[4].x * kp[4].s) / (kp[3].s + kp[4].s) : kp[CHAIN[sl.chain][0]].x;
-    sl.facing = kp[0].x >= earX ? 'right' : 'left';
-    if (sw / Math.max(torso, 1) < 0.45) sl.view = 'side';
-    else sl.view = kp[5].x >= kp[6].x ? 'front' : 'back';
+  /* 縦線の位置（画像の横方向 0〜1）：正面・背面は両足首の中央、側面は見えている側の足首 */
+  function plumbX(kp) {
+    var la = kp[15], ra = kp[16];
+    if (la.s < 0.15 && ra.s < 0.15) return null;
+    var shoulderW = Math.abs(kp[5].x - kp[6].x);
+    var torso = Math.abs((kp[11].y + kp[12].y) / 2 - (kp[5].y + kp[6].y) / 2);
+    var side = shoulderW / Math.max(torso, 0.001) < 0.45;
+    if (side || la.s < 0.15 || ra.s < 0.15) return la.s >= ra.s ? la.x : ra.x;
+    return (la.x + ra.x) / 2;
   }
 
-  function autoPlace(k) {
-    var sl = state.slots[k];
-    if (!sl.src) return;
-    var tok = ++sl.tok;
-    sl.status = 'busy'; renderStatus(k);
-    jobs = jobs.then(function () {
-      if (tok !== sl.tok) return;
-      return ensureModel().then(function () {
-        var im = new Image(); im.src = sl.src;
-        return im.decode().then(function () {
-          sl.iw = im.naturalWidth; sl.ih = im.naturalHeight;
-          return window.PoseCore.detect(im);
-        });
-      }).then(function (kp) {
-        if (tok !== sl.tok) return;
-        var ok = meanScore(kp, [5, 6, 11, 12, 13, 14, 15, 16]) >= 0.18;
-        if (ok) { sl.kp = kp; classify(sl); sl.status = 'ok'; }
-        else { sl.kp = templateKp(); sl.status = 'fail'; }
-      }).catch(function () {
-        if (tok !== sl.tok) return;
-        sl.kp = templateKp(); sl.status = 'fail';
-      }).then(function () { if (tok === sl.tok) renderPhotoParts(k); });
-    });
+  function col(k) { return document.querySelector('.col[data-k="' + k + '"]'); }
+
+  function placeLine(k) {
+    var sl = slots[k], c = col(k), f = c.querySelector('.frame'), line = c.querySelector('.plumb');
+    if (sl.px == null || !sl.iw) { line.hidden = true; return; }
+    var fw = f.clientWidth, fh = f.clientHeight;
+    var s = Math.min(fw / sl.iw, fh / sl.ih);
+    var ox = (fw - sl.iw * s) / 2;
+    line.style.left = (ox + sl.px * sl.iw * s) + 'px';
+    line.hidden = false;
   }
 
-  /* ---------- 写真を入れる ---------- */
+  function setStatus(k, t) { col(k).querySelector('.st').textContent = t; }
+
+  function updateMake() {
+    document.getElementById('makeBtn').disabled = !(slots.a.img && slots.b.img);
+  }
+
   function setPhoto(k, file) {
-    if (!file || !/^image\//.test(file.type)) { toast('画像ファイルを選んでください'); return; }
-    var sl = state.slots[k];
-    if (sl.owned && sl.src) URL.revokeObjectURL(sl.src);
-    sl.src = URL.createObjectURL(file);
-    sl.owned = true; sl.s = 1; sl.x = 0; sl.y = 0; sl.sample = false;
-    sl.kp = null; sl.view = 'front'; sl.iw = 3; sl.ih = 4;
-    state.active = k;
-    render();
-    var probe = new Image();
-    probe.onload = function () { sl.iw = probe.naturalWidth; sl.ih = probe.naturalHeight; if (state.show) autoPlace(k); else { sl.status = 'idle'; renderStatus(k); } };
-    probe.onerror = function () { toast('この画像は読み込めませんでした'); };
-    probe.src = sl.src;
-    toast(SIDE[k] + 'に入れました');
+    if (!file || !/^image\//.test(file.type)) return;
+    var sl = slots[k], c = col(k), img = c.querySelector('img');
+    if (sl.url) URL.revokeObjectURL(sl.url);
+    sl.url = URL.createObjectURL(file);
+    sl.px = null; sl.img = null;
+    var tok = sl.tok = (sl.tok || 0) + 1;
+    img.src = sl.url; img.hidden = false;
+    c.querySelector('.empty').hidden = true;
+    c.querySelector('.plumb').hidden = true;
+    document.getElementById('result').hidden = true;
+    var im = new Image(); im.src = sl.url;
+    im.decode().then(function () {
+      if (tok !== sl.tok) return;
+      sl.img = im; sl.iw = im.naturalWidth; sl.ih = im.naturalHeight;
+      updateMake();
+      setStatus(k, '縦線を引いています…');
+      jobs = jobs.then(function () {
+        if (tok !== sl.tok) return;
+        return ensureModel().then(function () { return window.PoseCore.detect(im); }).then(function (kp) {
+          if (tok !== sl.tok) return;
+          sl.px = plumbX(kp);
+          setStatus(k, sl.px == null ? '足元が見つかりませんでした' : '');
+          placeLine(k);
+        }).catch(function () { if (tok === sl.tok) setStatus(k, '読み込めませんでした'); });
+      });
+    }).catch(function () { setStatus(k, 'この画像は読み込めませんでした'); });
   }
 
   ['a', 'b'].forEach(function (k) {
-    var root = slotEls[k].el;
-    var cam = root.querySelector('[data-role="cam"]');
-    var file = root.querySelector('[data-role="file"]');
-    root.querySelector('[data-role="shoot"]').addEventListener('click', function () { cam.click(); });
-    root.querySelector('[data-role="pick"]').addEventListener('click', function () { file.click(); });
+    var c = col(k);
+    var cam = c.querySelector('[data-role="cam"]'), file = c.querySelector('[data-role="file"]');
+    c.querySelector('[data-role="shoot"]').addEventListener('click', function () { cam.click(); });
+    c.querySelector('[data-role="pick"]').addEventListener('click', function () { file.click(); });
     [cam, file].forEach(function (inp) {
-      inp.addEventListener('change', function () {
-        if (inp.files && inp.files[0]) setPhoto(k, inp.files[0]);
-        inp.value = '';
-      });
-    });
-    frames[k].empty.addEventListener('click', function () { file.click(); });
-    root.querySelector('.name').addEventListener('input', function (e) {
-      frames[k].cap.textContent = e.target.value;
-      frames[k].cap.hidden = !e.target.value;
-    });
-    root.querySelector('.paste').addEventListener('input', function (e) { e.target.value = ''; });
-    frames[k].cap.textContent = root.querySelector('.name').value;
-    root.querySelector('[data-role="auto"]').addEventListener('click', function () {
-      var sl = state.slots[k];
-      if (sl.sample) { var good = k === 'b'; sl.kp = sampleKp(good); sl.view = 'front'; sl.status = 'sample'; renderPhotoParts(k); toast('最初の位置に戻しました'); return; }
-      if (!state.show) { state.show = true; render(); }
-      autoPlace(k);
-    });
-    root.querySelector('.vseg').addEventListener('click', function (e) {
-      var b = e.target.closest('button'); if (!b) return;
-      var sl = state.slots[k]; sl.view = b.dataset.v;
-      renderPhotoParts(k);
+      inp.addEventListener('change', function () { setPhoto(k, inp.files[0]); inp.value = ''; });
     });
   });
+  window.addEventListener('resize', function () { placeLine('a'); placeLine('b'); });
 
-  document.addEventListener('paste', function (e) {
-    var items = e.clipboardData && e.clipboardData.items;
-    if (!items) return;
-    var file = null;
-    for (var i = 0; i < items.length; i++) {
-      if (items[i].kind === 'file' && /^image\//.test(items[i].type)) { file = items[i].getAsFile(); break; }
-    }
-    if (!file) return;
-    e.preventDefault();
-    var slot = e.target.closest && e.target.closest('.slot');
-    setPhoto(slot ? slot.dataset.k : state.active, file);
-  });
-
-  stage.addEventListener('dragover', function (e) { e.preventDefault(); });
-  stage.addEventListener('drop', function (e) {
-    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-    if (!f) return;
-    e.preventDefault();
-    var fr = e.target.closest('.frame');
-    setPhoto(state.mode === 'side' && fr ? fr.dataset.k : state.active, f);
-  });
-
-  /* ---------- 点のドラッグ / 写真の移動・拡大 ---------- */
-  var pts = new Map(), g = null, pd = null;
-  function pinchDist() {
-    if (pts.size !== 2) return 0;
-    var v = Array.from(pts.values());
-    return Math.hypot(v[0].x - v[1].x, v[0].y - v[1].y);
-  }
-  function keyAt(e) {
-    if (state.mode === 'slide') return state.active;
-    var fr = e.target.closest('.frame');
-    return fr ? fr.dataset.k : null;
-  }
-  function movePoint(e) {
-    var k = pd.k, sl = state.slots[k], r = frames[k].el.getBoundingClientRect();
-    var M = mapper(r.width, r.height, sl.iw, sl.ih, sl.s, sl.x, sl.y);
-    var q = M.inv(e.clientX - r.left, e.clientY - r.top);
-    sl.kp[pd.i].x = clamp(q[0], 0, 1);
-    sl.kp[pd.i].y = clamp(q[1], 0, 1);
-    sl.kp[pd.i].s = Math.max(sl.kp[pd.i].s, 0.6);
-    if (sl.status === 'ok' || sl.status === 'fail') { sl.status = 'edited'; renderStatus(k); }
-    renderOverlay(k); renderMeas(k);
-  }
-  stage.addEventListener('pointerdown', function (e) {
-    var t = e.target;
-    if (t.dataset && t.dataset.pt !== undefined && !g) {
-      pd = { k: t.dataset.k, i: +t.dataset.pt };
-      try { stage.setPointerCapture(e.pointerId); } catch (err) {}
-      if (state.mode === 'side' && pd.k !== state.active) setActive(pd.k);
-      e.preventDefault();
-      return;
-    }
-    if (e.target.closest('.divider') || e.target.closest('.empty')) return;
-    var k = g ? g.k : keyAt(e);
-    if (!k || !state.slots[k].src) return;
-    if (!g) g = { k: k, dist: 0 };
-    if (state.mode === 'side' && k !== state.active) setActive(k);
-    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    try { stage.setPointerCapture(e.pointerId); } catch (err) {}
-    g.dist = pinchDist();
-  });
-  stage.addEventListener('pointermove', function (e) {
-    if (pd) { movePoint(e); return; }
-    if (!g || !pts.has(e.pointerId)) return;
-    var prev = pts.get(e.pointerId), cur = { x: e.clientX, y: e.clientY };
-    var sl = state.slots[g.k];
-    if (pts.size === 1) {
-      var r = frames[g.k].el.getBoundingClientRect();
-      sl.x = clamp(sl.x + (cur.x - prev.x) / r.width, -1, 1);
-      sl.y = clamp(sl.y + (cur.y - prev.y) / r.height, -1, 1);
-    }
-    pts.set(e.pointerId, cur);
-    if (pts.size === 2) {
-      var d = pinchDist();
-      if (g.dist > 0) sl.s = clamp(sl.s * d / g.dist, 0.5, 5);
-      g.dist = d;
-    }
-    applyTransform(g.k);
-    renderOverlay(g.k);
-    if (g.k === state.active) syncZoom();
-  });
-  function endPointer(e) {
-    if (pd) { pd = null; return; }
-    pts.delete(e.pointerId);
-    if (pts.size === 0) g = null;
-    else if (g) g.dist = pinchDist();
-  }
-  stage.addEventListener('pointerup', endPointer);
-  stage.addEventListener('pointercancel', endPointer);
-  stage.addEventListener('wheel', function (e) {
-    var k = keyAt(e);
-    if (!k || !state.slots[k].src) return;
-    e.preventDefault();
-    var sl = state.slots[k];
-    sl.s = clamp(sl.s * Math.exp(-e.deltaY * 0.0015), 0.5, 5);
-    applyTransform(k); renderOverlay(k);
-    if (k === state.active) syncZoom();
-  }, { passive: false });
-
-  if (window.ResizeObserver) {
-    new ResizeObserver(function () { ['a', 'b'].forEach(renderOverlay); }).observe(stage);
-  }
-  window.addEventListener('resize', function () { ['a', 'b'].forEach(renderOverlay); });
-
-  /* ---------- 境目 ---------- */
-  var dragging = false;
-  function movePos(e) {
-    var r = stage.getBoundingClientRect();
-    state.pos = clamp((e.clientX - r.left) / r.width * 100, 0, 100);
-    stage.style.setProperty('--pos', state.pos + '%');
-    divider.setAttribute('aria-valuenow', String(Math.round(state.pos)));
-  }
-  divider.addEventListener('pointerdown', function (e) {
-    dragging = true;
-    try { divider.setPointerCapture(e.pointerId); } catch (err) {}
-    movePos(e);
-  });
-  divider.addEventListener('pointermove', function (e) { if (dragging) movePos(e); });
-  divider.addEventListener('pointerup', function () { dragging = false; });
-  divider.addEventListener('pointercancel', function () { dragging = false; });
-  divider.addEventListener('keydown', function (e) {
-    var step = e.shiftKey ? 10 : 2;
-    if (e.key === 'ArrowLeft') state.pos = clamp(state.pos - step, 0, 100);
-    else if (e.key === 'ArrowRight') state.pos = clamp(state.pos + step, 0, 100);
-    else return;
-    e.preventDefault();
-    stage.style.setProperty('--pos', state.pos + '%');
-    divider.setAttribute('aria-valuenow', String(Math.round(state.pos)));
-  });
-
-  /* ---------- 操作パネル ---------- */
-  $('#modeSeg').addEventListener('click', function (e) {
-    var b = e.target.closest('button'); if (!b) return;
-    state.mode = b.dataset.mode; render();
-  });
-  $('#arSeg').addEventListener('click', function (e) {
-    var b = e.target.closest('button'); if (!b) return;
-    state.ar = b.dataset.ar; render();
-  });
-  $('#targetSeg').addEventListener('click', function (e) {
-    var b = e.target.closest('button'); if (!b) return;
-    setActive(b.dataset.k);
-  });
-  $('#gridToggle').addEventListener('change', function (e) { state.grid = e.target.checked; render(); });
-  $('#ovToggle').addEventListener('change', function (e) {
-    state.show = e.target.checked; render();
-    if (state.show) ['a', 'b'].forEach(function (k) { var sl = state.slots[k]; if (sl.src && !sl.sample && !sl.kp) autoPlace(k); });
-  });
-  zoom.addEventListener('input', function () {
-    var sl = state.slots[state.active];
-    sl.s = zoom.value / 100;
-    zoomOut.textContent = zoom.value + '%';
-    applyTransform(state.active); renderOverlay(state.active);
-  });
-  $('#resetBtn').addEventListener('click', function () {
-    var sl = state.slots[state.active];
-    sl.s = 1; sl.x = 0; sl.y = 0;
-    applyTransform(state.active); syncZoom(); renderOverlay(state.active);
-  });
-  $('#swapBtn').addEventListener('click', function () {
-    var a = state.slots.a, b = state.slots.b;
-    ['src', 'owned', 's', 'x', 'y', 'sample', 'iw', 'ih', 'kp', 'view', 'chain', 'facing', 'status'].forEach(function (p) { var t = a[p]; a[p] = b[p]; b[p] = t; });
-    a.tok++; b.tok++;
-    render();
-    ['a', 'b'].forEach(function (k) { if (state.slots[k].status === 'busy') autoPlace(k); });
-    toast('写真を入れ替えました');
-  });
-
-  /* ---------- 書き出し ---------- */
-  function drawGrid(c, x, y, W, H) {
-    c.save();
-    c.strokeStyle = 'rgba(255,90,54,0.85)';
-    c.lineWidth = 3;
-    c.beginPath(); c.moveTo(x + W / 2, y); c.lineTo(x + W / 2, y + H); c.stroke();
-    c.lineWidth = 2;
-    [0.25, 0.5, 0.75].forEach(function (t) {
-      c.beginPath(); c.moveTo(x, y + H * t); c.lineTo(x + W, y + H * t); c.stroke();
-    });
-    c.restore();
-  }
-  function drawOverlay(c, sl, x, y, W, H) {
-    var M = mapper(W, H, sl.iw, sl.ih, sl.s, sl.x, sl.y);
-    var gm = shapes(sl, { h: H, fwd: function (u, v) { var q = M.fwd(u, v); return [x + q[0], y + q[1]]; } });
-    c.save();
-    c.beginPath(); c.rect(x, y, W, H); c.clip();
-    c.lineCap = 'round';
-    c.strokeStyle = 'rgba(0,0,0,0.3)'; c.lineWidth = 8;
-    c.beginPath(); c.moveTo(gm.plumb, y); c.lineTo(gm.plumb, y + H); c.stroke();
-    c.strokeStyle = '#19c37d'; c.lineWidth = 4;
-    c.beginPath(); c.moveTo(gm.plumb, y); c.lineTo(gm.plumb, y + H); c.stroke();
-    c.restore();
-    var t = sideLabels(sl);
-    c.save();
-    c.font = '700 30px ' + FONT; c.textBaseline = 'middle'; c.textAlign = 'center';
-    [[t[0], x + 20 + 28], [t[1], x + W - 20 - 28]].forEach(function (r) {
-      c.fillStyle = 'rgba(16,21,20,0.72)';
-      c.beginPath(); c.roundRect ? c.roundRect(r[1] - 28, y + H - 60, 56, 44, 8) : c.rect(r[1] - 28, y + H - 60, 56, 44); c.fill();
-      c.fillStyle = '#fff'; c.fillText(r[0], r[1], y + H - 38);
-    });
-    c.restore();
-  }
-
-  async function make() {
-    var btn = $('#makeBtn');
-    btn.disabled = true;
-    try {
-      var W = 900, H = Math.round(W * AR[state.ar][1] / AR[state.ar][0]);
-      var pad = 28, gap = 24, strip = 104;
-      var cv = document.createElement('canvas');
-      cv.width = pad * 2 + W * 2 + gap;
-      cv.height = pad * 2 + H + strip;
-      var c = cv.getContext('2d');
-      c.fillStyle = '#ffffff';
-      c.fillRect(0, 0, cv.width, cv.height);
-      var keys = ['a', 'b'];
-      for (var i = 0; i < keys.length; i++) {
-        var k = keys[i], sl = state.slots[k], img = frames[k].img;
-        var x = pad + i * (W + gap), y = pad;
-        c.save();
-        c.beginPath(); c.rect(x, y, W, H); c.clip();
-        c.fillStyle = '#e3e8e6'; c.fillRect(x, y, W, H);
-        if (sl.src) {
-          try { await img.decode(); } catch (err) {}
-          if (img.naturalWidth) {
-            var cs = Math.max(W / img.naturalWidth, H / img.naturalHeight) * sl.s;
-            var dw = img.naturalWidth * cs, dh = img.naturalHeight * cs;
-            c.drawImage(img, x + (W - dw) / 2 + sl.x * W, y + (H - dh) / 2 + sl.y * H, dw, dh);
-          }
-        }
-        if (state.grid) drawGrid(c, x, y, W, H);
-        c.restore();
-        if (state.show && sl.kp && sl.src) drawOverlay(c, sl, x, y, W, H);
-        var text = slotEls[k].el.querySelector('.name').value;
-        var size = 44;
-        c.font = '700 ' + size + 'px ' + FONT;
-        while (c.measureText(text).width > W - 24 && size > 20) { size -= 2; c.font = '700 ' + size + 'px ' + FONT; }
-        c.fillStyle = '#1b2422';
-        c.textAlign = 'center';
-        c.textBaseline = 'middle';
-        c.fillText(text, x + W / 2, y + H + strip / 2);
+  /* 書き出し：Before / After を横に並べた1枚 */
+  document.getElementById('makeBtn').addEventListener('click', function () {
+    var W = 900, H = 1200, G = 24, P = 32;
+    var cv = document.createElement('canvas');
+    cv.width = P * 2 + W * 2 + G; cv.height = P * 2 + H;
+    var c = cv.getContext('2d');
+    c.fillStyle = '#ffffff'; c.fillRect(0, 0, cv.width, cv.height);
+    ['a', 'b'].forEach(function (k, i) {
+      var sl = slots[k], x = P + i * (W + G), y = P;
+      c.fillStyle = '#f2f4f4'; c.fillRect(x, y, W, H);
+      var s = Math.min(W / sl.iw, H / sl.ih), dw = sl.iw * s, dh = sl.ih * s;
+      var ix = x + (W - dw) / 2, iy = y + (H - dh) / 2;
+      c.drawImage(sl.img, ix, iy, dw, dh);
+      if (sl.px != null) {
+        var lx = ix + sl.px * dw;
+        c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(lx - 3, y, 6, H);
+        c.fillStyle = '#19c37d'; c.fillRect(lx - 2, y, 4, H);
       }
-      $('#out').src = cv.toDataURL('image/jpeg', 0.92);
-      $('#result').hidden = false;
-      $('#result').scrollIntoView({ block: 'nearest' });
-    } catch (err) {
-      toast('画像を作れませんでした。別の写真でもう一度お試しください');
-    }
-    btn.disabled = false;
-  }
-  $('#makeBtn').addEventListener('click', make);
-
-  render();
+      c.font = '700 40px ' + getComputedStyle(document.body).fontFamily;
+      var tw = c.measureText(sl.label).width;
+      c.fillStyle = 'rgba(30,30,30,0.72)'; c.fillRect(x + 24, y + 24, tw + 40, 64);
+      c.fillStyle = '#ffffff'; c.textBaseline = 'middle'; c.fillText(sl.label, x + 44, y + 57);
+    });
+    var out = document.getElementById('out');
+    out.src = cv.toDataURL('image/jpeg', 0.92);
+    document.getElementById('result').hidden = false;
+  });
 })();
 </script>
-
-
 <script>
 if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
   window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
