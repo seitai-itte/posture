@@ -36,11 +36,13 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 .seg button { min-height: 36px; padding: 0 14px; border: 0; background: #fff; color: var(--fg); font: inherit; font-size: 13px; cursor: pointer; }
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.ctls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .gridctl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
 
-.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.col { display: flex; flex-direction: column; gap: 10px; }
-.frame { position: relative; aspect-ratio: 3 / 4; background: var(--frame); border-radius: 8px; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+.pair { display: flex; flex-direction: column; gap: 24px; }
+.col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.col .btns { width: 100%; max-width: 360px; }
+.frame { position: relative; width: 100%; background: var(--frame); border-radius: 8px; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
 .frame img { position: absolute; left: 0; top: 0; max-width: none; transform-origin: 0 0; pointer-events: none; -webkit-user-drag: none; }
 .frame .grid { position: absolute; inset: 0; pointer-events: none; }
 .frame .plumb { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; margin-left: -0.5px; background: var(--plumb); pointer-events: none; }
@@ -62,6 +64,14 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 <main class="app">
   <div class="top">
     <h1>姿勢比較</h1>
+    <div class="ctls">
+    <div class="gridctl">
+      <span id="sizeLbl">保存サイズ</span>
+      <div class="seg" id="sizeSeg" role="group" aria-labelledby="sizeLbl">
+        <button type="button" data-r="phone" aria-pressed="true">携帯（9:16）</button>
+        <button type="button" data-r="square" aria-pressed="false">1:1</button>
+      </div>
+    </div>
     <div class="gridctl">
       <span id="gridLbl">網目</span>
       <div class="seg" id="gridSeg" role="group" aria-labelledby="gridLbl">
@@ -69,6 +79,7 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
         <button type="button" data-g="1" aria-pressed="false">粗い</button>
         <button type="button" data-g="2" aria-pressed="false">細かい</button>
       </div>
+    </div>
     </div>
   </div>
 
@@ -121,7 +132,10 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
   /* 網目：枠の横幅を何マスに割るか（縦は 3:4 で正方形になる数） */
   var GRID = [0, 6, 12];
   var MAX_S = 6;
-  var state = { grid: 0 };
+  /* 保存サイズ：全体の幅×高さ。Before/After を左右に半分ずつ並べる */
+  var SIZES = { phone: [1080, 1920], square: [1080, 1080] };
+  var state = { grid: 0, ratio: 'phone' };
+  function panelAspect() { var z = SIZES[state.ratio]; return (z[0] / 2) / z[1]; }
   var slots = { a: { label: 'Before' }, b: { label: 'After' } };
   var tfPromise = null, modelPromise = null, jobs = Promise.resolve();
 
@@ -165,7 +179,7 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
   /* ---------- 写真の位置と拡大 ----------
      s：枠に収まる大きさを1とした倍率、tx/ty：枠の幅・高さに対するずれ（中央基準） */
   function fit(sl, fw, fh) {
-    var c = Math.min(fw / sl.iw, fh / sl.ih) * sl.s;
+    var c = Math.max(fw / sl.iw, fh / sl.ih) * sl.s;
     var dw = sl.iw * c, dh = sl.ih * c;
     return { c: c, dw: dw, dh: dh, x: fw / 2 + sl.tx * fw - dw / 2, y: fh / 2 + sl.ty * fh - dh / 2 };
   }
@@ -174,7 +188,7 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
     if (sl.ax == null) { sl.tx = 0; return; }
     /* 足首が中央の縦線に乗るように横にずらす */
     var f = col('a').querySelector('.frame'), fw = f.clientWidth || 3, fh = f.clientHeight || 4;
-    var c = Math.min(fw / sl.iw, fh / sl.ih);
+    var c = Math.max(fw / sl.iw, fh / sl.ih);
     sl.tx = -(sl.ax - 0.5) * sl.iw * c / fw;
   }
   function apply(k) {
@@ -184,6 +198,24 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
     img.style.width = sl.iw + 'px'; img.style.height = sl.ih + 'px';
     img.style.transform = 'translate(' + g.x + 'px,' + g.y + 'px) scale(' + g.c + ')';
   }
+
+  /* ---------- 枠の大きさ：保存サイズと同じ形で、画面に収まる最大 ---------- */
+  function sizeFrames() {
+    var a = panelAspect();
+    var maxW = $('.pair').clientWidth, maxH = Math.max(320, window.innerHeight * 0.8);
+    var w = Math.min(maxW, maxH * a), h = w / a;
+    document.querySelectorAll('.frame').forEach(function (f) { f.style.width = w + 'px'; f.style.height = h + 'px'; });
+  }
+  document.querySelectorAll('#sizeSeg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      state.ratio = b.getAttribute('data-r');
+      document.querySelectorAll('#sizeSeg button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      sizeFrames();
+      ['a', 'b'].forEach(function (k) { var sl = slots[k]; if (!sl.img) return; if (!sl.moved) homePos(sl); else sl.s = clampS(sl.s, sl); apply(k); });
+      drawGridCss();
+      $('#result').hidden = true;
+    });
+  });
 
   /* ---------- 網目 ---------- */
   function drawGridCss() {
@@ -244,10 +276,14 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
   }
 
   /* ---------- ドラッグ・ピンチ・ホイール ---------- */
-  function clampS(s) { return Math.min(MAX_S, Math.max(1, s)); }
+  function minS(sl) {
+    var a = panelAspect(), r = sl.iw / sl.ih;
+    return Math.min(a / r, r / a);
+  }
+  function clampS(s, sl) { return Math.min(MAX_S, Math.max(minS(sl), s)); }
   function zoomAt(k, ns, px, py) {
     var sl = slots[k], f = col(k).querySelector('.frame'), fw = f.clientWidth, fh = f.clientHeight;
-    ns = clampS(ns);
+    ns = clampS(ns, sl);
     var r = ns / sl.s;
     /* 指の位置(px,py)が同じ場所を指したままになるように */
     var cx = fw / 2 + sl.tx * fw, cy = fh / 2 + sl.ty * fh;
@@ -308,17 +344,17 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
     }, { passive: false });
   });
 
-  window.addEventListener('resize', function () { apply('a'); apply('b'); drawGridCss(); });
+  window.addEventListener('resize', function () { sizeFrames(); apply('a'); apply('b'); drawGridCss(); });
 
   /* ---------- 書き出し：画面と同じ見え方で Before / After を横に並べる ---------- */
   $('#makeBtn').addEventListener('click', function () {
-    var W = 900, H = 1200, G = 24, P = 32;
+    var Z = SIZES[state.ratio], W = Z[0] / 2, H = Z[1];
     var cv = document.createElement('canvas');
-    cv.width = P * 2 + W * 2 + G; cv.height = P * 2 + H;
+    cv.width = Z[0]; cv.height = Z[1];
     var c = cv.getContext('2d');
-    c.fillStyle = '#ffffff'; c.fillRect(0, 0, cv.width, cv.height);
+    var font = getComputedStyle(document.body).fontFamily;
     ['a', 'b'].forEach(function (k, i) {
-      var sl = slots[k], x = P + i * (W + G), y = P;
+      var sl = slots[k], x = i * W, y = 0;
       c.save();
       c.beginPath(); c.rect(x, y, W, H); c.clip();
       c.fillStyle = '#f2f4f4'; c.fillRect(x, y, W, H);
@@ -328,20 +364,21 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
       if (n) {
         var cell = W / n;
         c.fillStyle = 'rgba(255,255,255,0.75)';
-        for (var gx = 0; gx <= W; gx += cell) c.fillRect(x + gx, y, 2, H);
-        for (var gy = 0; gy <= H; gy += cell) c.fillRect(x, y + gy, W, 2);
+        for (var gx = 0; gx <= W + 0.5; gx += cell) c.fillRect(x + gx, y, 1.5, H);
+        for (var gy = 0; gy <= H + 0.5; gy += cell) c.fillRect(x, y + gy, W, 1.5);
       }
       c.fillStyle = '#19c37d'; c.fillRect(x + W / 2 - 1, y, 2, H);
-      c.restore();
-      c.font = '600 26px ' + getComputedStyle(document.body).fontFamily;
+      c.font = '600 22px ' + font;
       var tw = c.measureText(sl.label).width;
-      c.fillStyle = 'rgba(30,30,30,0.62)'; c.fillRect(x + 20, y + 20, tw + 28, 44);
-      c.fillStyle = '#ffffff'; c.textBaseline = 'middle'; c.fillText(sl.label, x + 34, y + 43);
+      c.fillStyle = 'rgba(30,30,30,0.62)'; c.fillRect(x + 16, y + 16, tw + 22, 36);
+      c.fillStyle = '#ffffff'; c.textBaseline = 'middle'; c.fillText(sl.label, x + 27, y + 35);
+      c.restore();
     });
     $('#out').src = cv.toDataURL('image/jpeg', 0.92);
     $('#result').hidden = false;
   });
 
+  sizeFrames();
   drawGridCss();
 })();
 </script>
