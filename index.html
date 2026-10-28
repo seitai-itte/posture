@@ -236,10 +236,10 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
       var g = f.querySelector('.grid');
       if (!n) { g.style.backgroundImage = 'none'; return; }
       var cell = f.clientWidth / n;
-      var ln = 'rgba(255,255,255,0.75)';
+      var ln = 'rgba(255,255,255,0.7)';
       g.style.backgroundImage =
-        'linear-gradient(to right, ' + ln + ' 1px, transparent 1px),' +
-        'linear-gradient(to bottom, ' + ln + ' 1px, transparent 1px)';
+        'linear-gradient(to right, ' + ln + ' 0.5px, transparent 0.5px),' +
+        'linear-gradient(to bottom, ' + ln + ' 0.5px, transparent 0.5px)';
       g.style.backgroundSize = cell + 'px ' + cell + 'px';
       g.style.backgroundPosition = '0 0';
       g.style.boxShadow = 'inset 0 0 0 0 transparent';
@@ -372,9 +372,9 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
       var n = GRID[state.grid];
       if (n) {
         var cell = W / n;
-        c.fillStyle = 'rgba(255,255,255,0.75)';
-        for (var gx = 0; gx <= W + 0.5; gx += cell) c.fillRect(x + gx, y, 1.5, H);
-        for (var gy = 0; gy <= H + 0.5; gy += cell) c.fillRect(x, y + gy, W, 1.5);
+        c.fillStyle = 'rgba(255,255,255,0.7)';
+        for (var gx = 0; gx <= W + 0.5; gx += cell) c.fillRect(x + gx, y, 1, H);
+        for (var gy = 0; gy <= H + 0.5; gy += cell) c.fillRect(x, y + gy, W, 1);
       }
       c.fillStyle = '#19c37d'; c.fillRect(x + W / 2 - 1, y, 2, H);
       c.font = '600 22px ' + font;
