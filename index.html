@@ -29,16 +29,18 @@ html, body { margin: 0; }
 body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.6; -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.app { max-width: 760px; margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 16px 40px; display: flex; flex-direction: column; gap: 16px; }
-.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.app { max-width: 760px; margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 14px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .seg button { min-height: 36px; padding: 0 14px; border: 0; background: #fff; color: var(--fg); font: inherit; font-size: 13px; cursor: pointer; }
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
-.ctls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-.gridctl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.opts { display: flex; flex-direction: column; }
+.optrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.optrow:last-child { border-bottom: 1px solid var(--line); }
+.optrow .seg button { min-height: 34px; padding: 0 12px; }
 
 .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 0; }
 .col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -53,6 +55,7 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 .frame .empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; pointer-events: none; }
 .frame .st { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; color: #fff; font-size: 11.5px; text-shadow: 0 1px 2px rgba(0,0,0,0.6); pointer-events: none; }
 
+.pickrow { display: grid; grid-template-columns: 1.6fr 1fr; gap: 8px; }
 .btns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .btn { min-height: 44px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--fg); font: inherit; font-weight: 600; cursor: pointer; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -65,32 +68,7 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 </head>
 <body>
 <main class="app">
-  <div class="top">
-    <h1>姿勢比較</h1>
-    <div class="ctls">
-    <div class="gridctl">
-      <span id="sizeLbl">保存サイズ</span>
-      <div class="seg" id="sizeSeg" role="group" aria-labelledby="sizeLbl">
-        <button type="button" data-r="phone" aria-pressed="true">携帯（9:16）</button>
-        <button type="button" data-r="square" aria-pressed="false">1:1</button>
-      </div>
-    </div>
-    <div class="gridctl">
-      <span id="gridLbl">網目</span>
-      <div class="seg" id="gridSeg" role="group" aria-labelledby="gridLbl">
-        <button type="button" data-g="0" aria-pressed="true">なし</button>
-        <button type="button" data-g="1" aria-pressed="false">粗い</button>
-        <button type="button" data-g="2" aria-pressed="false">細かい</button>
-      </div>
-    <div class="gridctl">
-      <span id="lblLbl">ラベル</span>
-      <div class="seg" id="lblSeg" role="group" aria-labelledby="lblLbl">
-        <button type="button" data-l="1" aria-pressed="true">あり</button>
-        <button type="button" data-l="0" aria-pressed="false">なし</button>
-      </div>
-    </div>
-    </div>
-  </div>
+  <div class="top"><h1>姿勢比較</h1></div>
 
   <div class="pair">
     <div class="col" data-k="a">
@@ -102,12 +80,6 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
         <span class="lbl">Before</span>
         <span class="st" aria-live="polite"></span>
       </div>
-      <div class="btns">
-        <button class="btn" type="button" data-role="shoot">撮影</button>
-        <button class="btn" type="button" data-role="pick">選ぶ</button>
-      </div>
-      <input type="file" accept="image/*" capture="environment" data-role="cam" hidden>
-      <input type="file" accept="image/*" data-role="file" hidden>
     </div>
     <div class="col" data-k="b">
       <div class="frame">
@@ -118,15 +90,39 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
         <span class="lbl">After</span>
         <span class="st" aria-live="polite"></span>
       </div>
-      <div class="btns">
-        <button class="btn" type="button" data-role="shoot">撮影</button>
-        <button class="btn" type="button" data-role="pick">選ぶ</button>
-      </div>
-      <input type="file" accept="image/*" capture="environment" data-role="cam" hidden>
-      <input type="file" accept="image/*" data-role="file" hidden>
     </div>
   </div>
+  <div class="pickrow">
+    <button class="btn primary" type="button" id="pickBtn">写真を2枚選ぶ</button>
+    <button class="btn" type="button" id="swapBtn">左右を入れ替え</button>
+  </div>
+  <input type="file" accept="image/*" multiple id="pickInput" hidden>
   <p class="hint">写真はドラッグで移動、2本指（パソコンはホイール）で拡大。ダブルタップで最初の位置に戻ります。</p>
+
+  <section class="opts" aria-label="表示と保存の設定">
+    <div class="optrow">
+      <span id="sizeLbl">保存サイズ</span>
+      <div class="seg" id="sizeSeg" role="group" aria-labelledby="sizeLbl">
+        <button type="button" data-r="p34" aria-pressed="true">3:4</button>
+        <button type="button" data-r="square" aria-pressed="false">1:1</button>
+      </div>
+    </div>
+    <div class="optrow">
+      <span id="gridLbl">網目</span>
+      <div class="seg" id="gridSeg" role="group" aria-labelledby="gridLbl">
+        <button type="button" data-g="0" aria-pressed="true">なし</button>
+        <button type="button" data-g="1" aria-pressed="false">粗い</button>
+        <button type="button" data-g="2" aria-pressed="false">細かい</button>
+      </div>
+    </div>
+    <div class="optrow">
+      <span id="lblLbl">Before / After の文字</span>
+      <div class="seg" id="lblSeg" role="group" aria-labelledby="lblLbl">
+        <button type="button" data-l="1" aria-pressed="true">あり</button>
+        <button type="button" data-l="0" aria-pressed="false">なし</button>
+      </div>
+    </div>
+  </section>
 
   <button class="btn primary" type="button" id="makeBtn" disabled>1枚の画像にする</button>
   <div class="result" id="result" hidden>
@@ -142,8 +138,8 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
   var GRID = [0, 6, 12];
   var MAX_S = 6;
   /* 保存サイズ：全体の幅×高さ。Before/After を左右に半分ずつ並べる */
-  var SIZES = { phone: [1080, 1920], square: [1080, 1080] };
-  var state = { grid: 0, ratio: 'phone', label: 1 };
+  var SIZES = { p34: [1080, 1440], square: [1080, 1080] };
+  var state = { grid: 0, ratio: 'p34', label: 1 };
   function panelAspect() { var z = SIZES[state.ratio]; return (z[0] / 2) / z[1]; }
   var slots = { a: { label: 'Before' }, b: { label: 'After' } };
   var tfPromise = null, modelPromise = null, jobs = Promise.resolve();
@@ -279,6 +275,7 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
   function setPhoto(k, file) {
     if (!file || !/^image\//.test(file.type)) return;
     var sl = slots[k], c = col(k), img = c.querySelector('img');
+    sl.file = file;
     if (sl.url) URL.revokeObjectURL(sl.url);
     sl.url = URL.createObjectURL(file);
     sl.img = null; sl.ax = null;
@@ -322,13 +319,6 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
 
   ['a', 'b'].forEach(function (k) {
     var c = col(k), f = c.querySelector('.frame'), sl = slots[k];
-    var cam = c.querySelector('[data-role="cam"]'), file = c.querySelector('[data-role="file"]');
-    c.querySelector('[data-role="shoot"]').addEventListener('click', function () { cam.click(); });
-    c.querySelector('[data-role="pick"]').addEventListener('click', function () { file.click(); });
-    [cam, file].forEach(function (inp) {
-      inp.addEventListener('change', function () { setPhoto(k, inp.files[0]); inp.value = ''; });
-    });
-
     var pts = {}, last = null, lastTap = 0;
     function pos(e) { var r = f.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
     function pair() {
@@ -370,6 +360,22 @@ h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
       var p = pos(e);
       zoomAt(k, sl.s * Math.exp(-e.deltaY * 0.0015), p.x, p.y);
     }, { passive: false });
+  });
+
+  /* ---------- 写真を選ぶ：2枚いっぺんに（1枚目→Before、2枚目→After） ---------- */
+  var pickInput = $('#pickInput');
+  $('#pickBtn').addEventListener('click', function () { pickInput.click(); });
+  pickInput.addEventListener('change', function () {
+    var fs = Array.prototype.slice.call(pickInput.files || []);
+    pickInput.value = '';
+    if (!fs.length) return;
+    if (fs.length >= 2) { setPhoto('a', fs[0]); setPhoto('b', fs[1]); return; }
+    setPhoto(!slots.a.url ? 'a' : (!slots.b.url ? 'b' : 'a'), fs[0]);
+  });
+  $('#swapBtn').addEventListener('click', function () {
+    var fa = slots.a.file, fb = slots.b.file;
+    if (fa) setPhoto('b', fa);
+    if (fb) setPhoto('a', fb);
   });
 
   window.addEventListener('resize', function () { sizeFrames(); apply('a'); apply('b'); drawGridCss(); });
